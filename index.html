@@ -1,496 +1,305 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VELTRA — Relojes de Alta Gama</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
-  
-  <style>
-    /* ========== VARIABLES ========== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --green-dark: #064e3b; --green: #047857; --green-light: #d1fae5;
-      --whatsapp: #25D366; --whatsapp-hover: #1ebe5d;
-      --ink: #111827; --ink-soft: #6b7280; --white: #ffffff;
-      --line: #e5e7eb; --radius: 16px;
-      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-      --ease: cubic-bezier(0.4, 0, 0.2, 1); --t: 0.3s var(--ease);
-    }
-    
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: #fafafa; color: var(--ink); line-height: 1.6; overflow-x: hidden; }
-    body.modal-open { overflow: hidden; }
-    img { display: block; max-width: 100%; }
-    a { text-decoration: none; color: inherit; }
-    button { font-family: inherit; cursor: pointer; border: none; background: none; }
-    .container { width: min(1100px, 100% - 2rem); margin-inline: auto; }
-
-    /* ========== BOTONES ========== */
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem 1.5rem; border-radius: 8px; font-size: 0.95rem; font-weight: 600; transition: all var(--t); }
-    .btn--primary { background: var(--green); color: #fff; }
-    .btn--primary:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-    .btn--whatsapp { background: var(--whatsapp); color: #fff; }
-    .btn--whatsapp:hover { background: var(--whatsapp-hover); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-    .btn--small { padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 6px; }
-
-    /* ========== HEADER ========== */
-    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); transition: transform var(--t); }
-    .header.hidden { transform: translateY(-100%); }
-    .header__inner { display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: var(--green-dark); }
-    .logo__dot { color: var(--green); }
-
-    /* ========== HERO CARRUSEL ========== */
-    .hero { position: relative; height: 75dvh; min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; }
-    .hero__bg { position: absolute; inset: 0; z-index: 1; }
-    .hero__slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1s ease-in-out; }
-    .hero__slide.active { opacity: 1; }
-    
-    .hero__overlay { 
-      position: absolute; inset: 0; 
-      background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%);
-      z-index: 2; 
-    }
-
-    .hero__fade {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
-      background: linear-gradient(to bottom, transparent, #fafafa);
-      z-index: 3; pointer-events: none;
-    }
-    
-    .hero__content { position: relative; z-index: 4; max-width: 800px; padding: 0 1rem; color: #fff; }
-    .hero__title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.1; font-weight: 600; margin-bottom: 1rem; }
-    .hero__title em { color: var(--green-light); font-style: italic; }
-    .hero__text { font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; font-weight: 300; }
-    .hero__actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-  
-      /* ========== BARRA DE BÚSQUEDA Y FILTROS ========== */
-    .search-section { padding: 1.5rem 0; background: var(--white); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
-    .search-box { display: flex; align-items: center; background: #f3f4f6; border-radius: 30px; padding: 0.6rem 1.2rem; margin-bottom: 1rem; border: 1px solid transparent; transition: all var(--t); max-width: 600px; margin-inline: auto; }
-    .search-box:focus-within { border-color: var(--green); background: var(--white); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
-    .search-box svg { color: var(--ink-soft); margin-right: 0.5rem; }
-    .search-box input { border: none; background: transparent; outline: none; width: 100%; font-size: 1rem; color: var(--ink); }
-    
-    .filters { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
-    .filter { padding: 0.5rem 1.2rem; border-radius: 30px; font-size: 0.85rem; font-weight: 500; color: var(--ink-soft); background: var(--white); border: 1px solid var(--line); transition: all var(--t); }
-    .filter:hover { border-color: var(--green); color: var(--green); }
-    .filter.active { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
-
-    /* ========== CATÁLOGO ========== */
-    .catalog { padding: 2rem 0 5rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
-    
-    .card { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: all var(--t); display: flex; flex-direction: column; }
-    .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
-    .card__media { position: relative; aspect-ratio: 1/1; overflow: hidden; cursor: pointer; background: #f8f9fa; }
-    .card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-    .card:hover .card__media img { transform: scale(1.05); }
-    .card__cat { position: absolute; top: 0.8rem; left: 0.8rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; color: var(--green-dark); text-transform: uppercase; }
-    
-    .card__body { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
-    .card__name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; cursor: pointer; }
-    .card__specs { font-size: 0.75rem; color: var(--ink-soft); margin-bottom: 0.8rem; line-height: 1.4; }
-    
-    .card__footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding-top: 0.8rem; border-top: 1px solid var(--line); }
-    .card__price { font-size: 1.1rem; font-weight: 700; color: var(--green-dark); }
-    .card__price small { font-size: 0.7rem; color: var(--ink-soft); font-weight: 400; }
-
-    /* ========== MODAL ========== */
-    .modal { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 1rem; visibility: hidden; }
-    .modal.active { visibility: visible; }
-    .modal__overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); opacity: 0; transition: opacity var(--t); }
-    .modal.active .modal__overlay { opacity: 1; }
-    
-    .modal__content { 
-      position: relative; background: var(--white); border-radius: var(--radius); 
-      width: min(800px, 100%); max-height: 90dvh; display: flex; flex-direction: column; 
-      overflow: hidden; opacity: 0; transform: scale(0.95); transition: all var(--t); 
-    }
-    .modal.active .modal__content { opacity: 1; transform: scale(1); }
-    
-    .modal__close { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; background: rgba(255,255,255,0.9); border-radius: 50%; font-size: 1.2rem; display: grid; place-items: center; z-index: 10; color: var(--ink); box-shadow: var(--shadow-sm); }
-    
-    /* IMAGEN DEL MODAL CON FLECHAS */
-    .modal__media { background: #111; height: 40dvh; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-    .modal__media img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; transition: transform 0.3s ease; }
-    
-    .modal__nav { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.2rem; font-weight: bold; color: var(--ink); z-index: 5; transition: background var(--t); }
-    .modal__nav:hover { background: #fff; }
-    .modal__nav.prev { left: 10px; }
-    .modal__nav.next { right: 10px; }
-    .modal__nav.hidden { display: none; }
-    
-    .modal__info { padding: 1.2rem; display: flex; flex-direction: column; overflow-y: auto; flex-grow: 1; }
-    .modal__cat { font-size: 0.7rem; text-transform: uppercase; color: var(--green); font-weight: 700; }
-    .modal__name { font-family: 'Playfair Display', serif; font-size: 1.5rem; line-height: 1.2; margin: 0.2rem 0; color: var(--ink); }
-    .modal__price { font-size: 1.3rem; font-weight: 700; color: var(--green-dark); margin-bottom: 0.5rem; }
-    .modal__desc { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 0.8rem; }
-    .modal__specs { list-style: none; display: grid; gap: 0.3rem; margin-bottom: 1rem; }
-    .modal__specs li { font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; color: var(--ink); }
-    .modal__specs li::before { content: '✓'; color: var(--green); font-weight: bold; }
-
-    /* ZOOM DE LA IMAGEN (LIGHTBOX) */
-    .lightbox { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s; cursor: zoom-out; }
-    .lightbox.active { opacity: 1; visibility: visible; }
-    .lightbox img { max-width: 95%; max-height: 95dvh; object-fit: contain; transform: scale(0.9); transition: transform 0.3s; }
-    .lightbox.active img { transform: scale(1); }
-
-    /* ========== FOOTER CON DIFUMINADO ARRIBA ========== */
-    .footer { 
-      background: var(--green-dark); 
-      padding: 5rem 0 2rem; /* Más padding arriba por el difuminado */
-      color: var(--white); 
-      text-align: center; 
-      position: relative;
-    }
-    /* Aquí creamos el degradado hacia arriba */
-    .footer::before {
-      content: '';
-      position: absolute;
-      top: -60px; left: 0; right: 0; height: 60px;
-      background: linear-gradient(to bottom, rgba(250,250,250,0), var(--green-dark));
-      pointer-events: none;
-    }
-    
-    .footer h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1rem; }
-    .footer p { color: var(--green-light); margin-bottom: 1.5rem; max-width: 500px; margin-inline: auto; font-size: 0.9rem; }
-    .footer__bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem; padding-top: 1.5rem; font-size: 0.8rem; opacity: 0.6; }
-
-    /* ========== RESPONSIVE ========== */
-    @media (min-width: 768px) {
-      .modal__content { flex-direction: row; max-height: 80vh; }
-      .modal__media { width: 50%; height: auto; }
-      .modal__info { width: 50%; padding: 2rem; overflow-y: auto; }
-    }
-
-    @media (max-width: 500px) {
-      .grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
-      .card__body { padding: 0.8rem; }
-      .card__name { font-size: 0.95rem; }
-      .card__price { font-size: 1rem; }
-      .card__footer { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-      .card__footer .btn { width: 100%; }
-      .hero__title { font-size: 2.2rem; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VELTRA — Relojes de Alta Gama</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--green-dark:#064e3b;--green:#047857;--green-light:#d1fae5;--whatsapp:#25D366;--ink:#111827;--ink-soft:#6b7280;--white:#ffffff;--line:#e5e7eb;--radius:16px;--shadow-sm:0 4px 6px -1px rgba(0,0,0,0.05);--shadow-lg:0 10px 25px -5px rgba(0,0,0,0.1);--t:0.3s ease}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:var(--ink);line-height:1.6;overflow-x:hidden}
+body.modal-open{overflow:hidden}
+img{display:block;max-width:100%}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+.container{width:min(1100px,100% - 2rem);margin-inline:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.8rem 1.5rem;border-radius:8px;font-size:.95rem;font-weight:600;transition:all var(--t)}
+.btn--primary{background:var(--green);color:#fff}
+.btn--primary:hover{background:var(--green-dark);transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.btn--whatsapp{background:var(--whatsapp);color:#fff}
+.btn--whatsapp:hover{background:#1ebe5d;transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.btn--small{padding:.5rem 1rem;font-size:.85rem;border-radius:6px}
+.header{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1rem 0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transition:transform var(--t)}
+.header.hidden{transform:translateY(-100%)}
+.header__inner{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--green-dark)}
+.logo__dot{color:var(--green)}
+.hero{position:relative;height:75dvh;min-height:500px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.hero__bg{position:absolute;inset:0;z-index:1}
+.hero__slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1s ease-in-out}
+.hero__slide.active{opacity:1}
+.hero__overlay{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(0,0,0,.2) 0%,rgba(0,0,0,.8) 100%);z-index:2}
+.hero__fade{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to bottom,transparent,#fafafa);z-index:3;pointer-events:none}
+.hero__content{position:relative;z-index:4;max-width:800px;padding:0 1rem;color:#fff}
+.hero__title{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,4.5rem);line-height:1.1;font-weight:600;margin-bottom:1rem}
+.hero__title em{color:var(--green-light);font-style:italic}
+.hero__text{font-size:1.1rem;opacity:.9;margin-bottom:2rem;font-weight:300}
+.hero__actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.search-section{padding:1.5rem 0;background:var(--white);border-bottom:1px solid var(--line);position:relative;z-index:5}
+.search-box{display:flex;align-items:center;background:#f3f4f6;border-radius:30px;padding:.6rem 1.2rem;margin-bottom:1rem;border:1px solid transparent;transition:all var(--t);max-width:600px;margin-inline:auto}
+.search-box svg{color:var(--ink-soft);margin-right:.5rem}
+.search-box input{border:none;background:transparent;outline:none;width:100%;font-size:1rem;color:var(--ink)}
+.filters{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.filter{padding:.5rem 1.2rem;border-radius:30px;font-size:.85rem;font-weight:500;color:var(--ink-soft);background:var(--white);border:1px solid var(--line);transition:all var(--t)}
+.filter.active{background:var(--green-dark);border-color:var(--green-dark);color:#fff}
+.catalog{padding:2rem 0 5rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem}
+.card{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);transition:all var(--t);display:flex;flex-direction:column;position:relative}
+.card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg)}
+.card__media{position:relative;aspect-ratio:1/1;overflow:hidden;cursor:pointer;background:#f8f9fa}
+.card__media img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.card:hover .card__media img{transform:scale(1.05)}
+.card__cat{position:absolute;top:.8rem;left:.8rem;background:rgba(255,255,255,.95);padding:.2rem .6rem;border-radius:20px;font-size:.7rem;font-weight:700;color:var(--green-dark)}
+.card__body{padding:1rem;display:flex;flex-direction:column;flex-grow:1}
+.card__name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;cursor:pointer}
+.card__specs{font-size:.75rem;color:var(--ink-soft);margin-bottom:.8rem;line-height:1.4}
+.card__footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:.8rem;border-top:1px solid var(--line)}
+.card__price{font-size:1.1rem;font-weight:700;color:var(--green-dark)}
+.card__price small{font-size:.7rem;color:var(--ink-soft);font-weight:400}
+.card.sold-out .card__media img{filter:grayscale(100%) brightness(.4)}
+.card.sold-out .btn--whatsapp{background:#9ca3af;pointer-events:none;cursor:not-allowed}
+.badge-sold-out{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);color:white;padding:.5rem 1rem;border-radius:8px;font-weight:bold;font-size:1.2rem;letter-spacing:2px;z-index:4;display:none}
+.card.sold-out .badge-sold-out{display:block}
+.modal{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:1rem;visibility:hidden}
+.modal.active{visibility:visible}
+.modal__overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);opacity:0;transition:opacity var(--t)}
+.modal.active .modal__overlay{opacity:1}
+.modal__content{position:relative;background:var(--white);border-radius:var(--radius);width:min(800px,100%);max-height:90dvh;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:scale(.95);transition:all var(--t)}
+.modal.active .modal__content{opacity:1;transform:scale(1)}
+.modal__close{position:absolute;top:10px;right:10px;width:32px;height:32px;background:rgba(255,255,255,.9);border-radius:50%;font-size:1.2rem;display:grid;place-items:center;z-index:10;color:var(--ink);box-shadow:var(--shadow-sm)}
+.modal__media{background:#111;height:40dvh;position:relative;display:flex;justify-content:center;align-items:center;overflow:hidden}
+.modal__media img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;transition:transform .3s ease}
+.modal__nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;background:rgba(255,255,255,.8);border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-size:1.2rem;font-weight:bold;color:var(--ink);z-index:5;transition:background var(--t)}
+.modal__nav.prev{left:10px}
+.modal__nav.next{right:10px}
+.modal__nav.hidden{display:none}
+.modal__info{padding:1.2rem;display:flex;flex-direction:column;overflow-y:auto;flex-grow:1}
+.modal__cat{font-size:.7rem;text-transform:uppercase;color:var(--green);font-weight:700}
+.modal__name{font-family:'Playfair Display',serif;font-size:1.5rem;line-height:1.2;margin:.2rem 0;color:var(--ink)}
+.modal__price{font-size:1.3rem;font-weight:700;color:var(--green-dark);margin-bottom:.5rem}
+.modal__desc{font-size:.85rem;color:var(--ink-soft);margin-bottom:.8rem}
+.modal__specs{list-style:none;display:grid;gap:.3rem;margin-bottom:1rem}
+.modal__specs li{font-size:.8rem;display:flex;align-items:center;gap:.5rem;color:var(--ink)}
+.modal__specs li::before{content:'✓';color:var(--green);font-weight:bold}
+.lightbox{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.9);display:flex;justify-content:center;align-items:center;opacity:0;visibility:hidden;transition:all .3s;cursor:zoom-out}
+.lightbox.active{opacity:1;visibility:visible}
+.lightbox img{max-width:95%;max-height:95dvh;object-fit:contain;transform:scale(.9);transition:transform .3s}
+.lightbox.active img{transform:scale(1)}
+.footer{background:var(--green-dark);padding:5rem 0 2rem;color:var(--white);text-align:center;position:relative}
+.footer::before{content:'';position:absolute;top:-60px;left:0;right:0;height:60px;background:linear-gradient(to bottom,rgba(250,250,250,0),var(--green-dark));pointer-events:none}
+.footer h2{font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:1rem}
+.footer p{color:var(--green-light);margin-bottom:1.5rem;max-width:500px;margin-inline:auto;font-size:.9rem}
+.footer__bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:2rem;padding-top:1.5rem;font-size:.8rem;opacity:.6}
+@media (min-width:768px){.modal__content{flex-direction:row;max-height:80vh}.modal__media{width:50%;height:auto}.modal__info{width:50%;padding:2rem}}
+@media (max-width:500px){.grid{grid-template-columns:repeat(2,1fr);gap:.8rem}.card__body{padding:.8rem}.card__name{font-size:.95rem}.card__price{font-size:1rem}.card__footer{flex-direction:column;align-items:flex-start;gap:.5rem}.card__footer .btn{width:100%}.hero__title{font-size:2.2rem}}
+</style>
 </head>
 <body>
-
-  <!-- HEADER -->
-  <header class="header" id="header">
-    <div class="container header__inner">
-      <a href="#" class="logo">VELTRA<span class="logo__dot">.</span></a>
-      <a href="#catalogo" class="btn btn--primary btn--small">Ver Relojes</a>
-    </div>
-  </header>
-
-  <!-- HERO CARRUSEL -->
-  <section class="hero">
-    <div class="hero__bg" id="heroCarrusel">
-      <div class="hero__slide active" style="background-image: url('https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=1600&q=80&auto=format&fit=crop');"></div>
-      <div class="hero__slide" style="background-image: url('https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1600&q=80&auto=format&fit=crop');"></div>
-      <div class="hero__slide" style="background-image: url('https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=1600&q=80&auto=format&fit=crop');"></div>
-    </div>
-    <div class="hero__overlay"></div>
-    <div class="hero__fade"></div>
-    <div class="hero__content">
-      <h1 class="hero__title">El tiempo,<br><em>hecho arte.</em></h1>
-      <p class="hero__text">Descubre nuestra colección exclusiva de relojes premium. Diseñados para destacar en cada ocasión.</p>
-      <div class="hero__actions">
-        <a href="#catalogo" class="btn btn--primary">Explorar Colección</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- BUSCADOR Y FILTROS -->
-  <section class="search-section">
-    <div class="container">
-      <div class="search-box">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="searchInput" placeholder="Buscar reloj...">
-      </div>
-      <div class="filters" id="filters"></div>
-    </div>
-  </section>
-
-  <!-- CATALOGO -->
-  <section class="catalog" id="catalogo">
-    <div class="container">
-      <div class="grid" id="grid"></div>
-    </div>
-  </section>
-
-  <!-- MODAL DETALLES -->
-  <div class="modal" id="modal">
-    <div class="modal__overlay" data-close></div>
-    <div class="modal__content">
-      <button class="modal__close" data-close>&times;</button>
-      
-      <!-- CONTENEDOR DE LA IMAGEN CON FLECHAS -->
-      <div class="modal__media" id="modalImageContainer">
-        <button class="modal__nav prev" id="btnPrev">&#10094;</button>
-        <img id="modalImg" src="" alt="" />
-        <button class="modal__nav next" id="btnNext">&#10095;</button>
-      </div>
-
-      <div class="modal__info">
-        <span class="modal__cat" id="modalCat"></span>
-        <h3 class="modal__name" id="modalName"></h3>
-        <p class="modal__price" id="modalPrice"></p>
-        <p class="modal__desc" id="modalDesc"></p>
-        <ul class="modal__specs" id="modalSpecs"></ul>
-        <a href="#" id="modalBuy" class="btn btn--whatsapp" style="margin-top: auto; width: 100%;">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-          Comprar por WhatsApp
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- LIGHTBOX (ZOOM DE IMAGEN) -->
-  <div class="lightbox" id="lightbox">
-    <img id="lightboxImg" src="" alt="Zoom" />
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="footer" id="contacto">
-    <div class="container">
-      <h2>¿Necesitas ayuda para elegir?</h2>
-      <p>Nuestro equipo te asesora de forma personalizada para encontrar el reloj perfecto para ti o para regalar.</p>
-      <a href="https://wa.me/584121770920?text=Hola,%20necesito%20ayuda%20para%20elegir%20un%20reloj." target="_blank" class="btn btn--whatsapp" style="font-size: 1rem; padding: 0.8rem 1.5rem;">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-        Contactar por WhatsApp
-      </a>
-      <p class="footer__bottom">© 2026 VELTRA. Todos los derechos reservados.</p>
-    </div>
-  </footer>
+<header class="header" id="header">
+<div class="container header__inner">
+<a href="#" class="logo">VELTRA<span class="logo__dot">.</span></a>
+<a href="#catalogo" class="btn btn--primary btn--small">Ver Relojes</a>
+</div>
+</header>
+<section class="hero">
+<div class="hero__bg">
+<div class="hero__slide active" style="background-image:url('https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=1600&q=80&auto=format&fit=crop')"></div>
+<div class="hero__slide" style="background-image:url('https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1600&q=80&auto=format&fit=crop')"></div>
+<div class="hero__slide" style="background-image:url('https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=1600&q=80&auto=format&fit=crop')"></div>
+</div>
+<div class="hero__overlay"></div>
+<div class="hero__fade"></div>
+<div class="hero__content">
+<h1 class="hero__title">El tiempo,<br><em>hecho arte.</em></h1>
+<p class="hero__text">Descubre nuestra colección exclusiva de relojes premium. Diseñados para destacar en cada ocasión.</p>
+<div class="hero__actions"><a href="#catalogo" class="btn btn--primary">Explorar Colección</a></div>
+</div>
+</section>
+<section class="search-section">
+<div class="container">
+<div class="search-box">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+<input type="text" id="searchInput" placeholder="Buscar reloj...">
+</div>
+<div class="filters" id="filters"></div>
+</div>
+</section>
+<section class="catalog" id="catalogo">
+<div class="container"><div class="grid" id="grid"></div></div>
+</section>
   
-    <script>
-    const WHATSAPP_NUMERO = "584121770920"; 
-    const MONEDA = "USD";
+  <div class="modal" id="modal">
+<div class="modal__overlay" data-close></div>
+<div class="modal__content">
+<button class="modal__close" data-close>&times;</button>
+<div class="modal__media" id="modalImageContainer">
+<button class="modal__nav prev" id="btnPrev">&#10094;</button>
+<img id="modalImg" src="" alt="" />
+<button class="modal__nav next" id="btnNext">&#10095;</button>
+</div>
+<div class="modal__info">
+<span class="modal__cat" id="modalCat"></span>
+<h3 class="modal__name" id="modalName"></h3>
+<p class="modal__price" id="modalPrice"></p>
+<p class="modal__desc" id="modalDesc"></p>
+<ul class="modal__specs" id="modalSpecs"></ul>
+<a href="#" id="modalBuy" class="btn btn--whatsapp" style="margin-top:auto;width:100%">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+Comprar por WhatsApp
+</a>
+</div>
+</div>
+</div>
+<div class="lightbox" id="lightbox"><img id="lightboxImg" src="" alt="Zoom" /></div>
+<footer class="footer" id="contacto">
+<div class="container">
+<h2>¿Necesitas ayuda para elegir?</h2>
+<p>Nuestro equipo te asesora de forma personalizada.</p>
+<a href="https://wa.me/584121770920?text=Hola,%20necesito%20ayuda%20para%20elegir%20un%20reloj." target="_blank" class="btn btn--whatsapp" style="font-size:1rem;padding:0.8rem 1.5rem;">Contactar por WhatsApp</a>
+<p class="footer__bottom">© 2026 VELTRA. Todos los derechos reservados.</p>
+</div>
+</footer>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ✅ TUS CREDENCIALES DE SUPABASE
+const SUPABASE_URL = "https://sqwthkykqltgwxcbbxem.supabase.co"; 
+const SUPABASE_KEY = "sb_publishable_RpjC0YQCWgE_mcW54PtiMQ_GQ-j2GEH";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // CAMBIO IMPORTANTE: Ahora cada reloj tiene un array de "imagenes" en vez de una sola.
-    const productos = [
-      { id: 1, nombre: "Aurora Classic", categoria: "Clásico", precio: 189, imagenes: ["https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600&q=80&auto=format&fit=crop"], desc: "Un reloj de líneas limpias y esfera equilibrada. Perfecto para el día a día.", specs: ["Acero inoxidable 316L", "Movimiento cuarzo suizo", "Cristal de zafiro", "Resistencia 5 ATM"] },
-      { id: 2, nombre: "Noir Élite", categoria: "Elegante", precio: 249, imagenes: ["https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600&q=80&auto=format&fit=crop"], desc: "Elegancia oscura y sobria. Su esfera negra mate y sus detalles dorados son atemporales.", specs: ["Caja PVD negro", "Movimiento automático", "Zafiro antirreflejo", "Resistencia 10 ATM"] },
-      { id: 3, nombre: "Royal Gold", categoria: "Elegante", precio: 329, imagenes: ["https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&q=80&auto=format&fit=crop"], desc: "Acabado dorado de alta resistencia con un diseño clásico que nunca pasa de moda.", specs: ["Baño de oro 18k", "Cuarzo japonés", "Malla ajustable", "Resistencia 3 ATM"] },
-      { id: 4, nombre: "Urban Steel", categoria: "Clásico", precio: 175, imagenes: ["https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=600&q=80&auto=format&fit=crop"], desc: "Diseño urbano, minimalista y versátil. El reloj que combina con todo.", specs: ["Acero cepillado", "Movimiento cuarzo", "Cristal mineral", "Resistencia 5 ATM"] },
-      { id: 5, nombre: "Seamaster Dive", categoria: "Deportivo", precio: 215, imagenes: ["https://images.unsplash.com/photo-1533139502658-0198f920d8e8?w=600&q=80&auto=format&fit=crop"], desc: "Reloj de buceo profesional. Ligero, resistente y con un diseño imponente.", specs: ["Caja de titanio", "Automático", "Correa de caucho", "Resistencia 30 ATM"] },
-      
-      /* NUEVO ROLEX CON 3 FOTOS DIFERENTES */
-      { 
-        id: 6, 
-        nombre: "Rolex Submariner", 
-        categoria: "Elegante", 
-        precio: 450, 
-        imagenes: [
-          "https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=600&q=80&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1622434641406-a158123450f9?w=600&q=80&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=600&q=80&auto=format&fit=crop"
-        ], 
-        desc: "El ícono de la relojería mundial. Un diseño atemporal y elegante que habla por sí solo.", 
-        specs: ["Acero Oystersteel", "Movimiento automático", "Cristal de zafiro", "Resistencia 30 ATM"] 
-      },
+const WHATSAPP_NUMERO = "584121770920"; 
+const MONEDA = "USD";
+let productos = [];
+let imagenesActuales = [];
+let indiceImagenActual = 0;
 
-      { id: 7, nombre: "Speed Chrono", categoria: "Deportivo", precio: 265, imagenes: ["https://images.unsplash.com/photo-1622434641406-a158123450f9?w=600&q=80&auto=format&fit=crop"], desc: "Cronógrafo de precisión con un diseño aerodinámico. Ideal para el deporte.", specs: ["Cronógrafo 3 esferas", "Cuarzo", "Cristal mineral", "Resistencia 10 ATM"] },
-      { id: 8, nombre: "Sport Carbon", categoria: "Deportivo", precio: 199, imagenes: ["https://images.unsplash.com/photo-1619134778706-7015533a6150?w=600&q=80&auto=format&fit=crop"], desc: "La esencia del deporte. Esfera oscura, correa de alto rendimiento y máxima resistencia.", specs: ["Fibra de carbono", "Cuarzo suizo", "Zafiro", "Resistencia 20 ATM"] }
-    ];
+const grid = document.getElementById("grid");
+const filtersEl = document.getElementById("filters");
+const searchInput = document.getElementById("searchInput");
+const modal = document.getElementById("modal");
+const modalImg = document.getElementById("modalImg");
+const modalCat = document.getElementById("modalCat");
+const modalName = document.getElementById("modalName");
+const modalPrice = document.getElementById("modalPrice");
+const modalDesc = document.getElementById("modalDesc");
+const modalSpecs = document.getElementById("modalSpecs");
+const modalBuy = document.getElementById("modalBuy");
+const header = document.getElementById("header");
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const modalImageContainer = document.getElementById("modalImageContainer");
+const btnPrev = document.getElementById("btnPrev");
+const btnNext = document.getElementById("btnNext");
 
-    const grid = document.getElementById("grid");
-    const filtersEl = document.getElementById("filters");
-    const searchInput = document.getElementById("searchInput");
-    const modal = document.getElementById("modal");
-    const modalImg = document.getElementById("modalImg");
-    const modalCat = document.getElementById("modalCat");
-    const modalName = document.getElementById("modalName");
-    const modalPrice = document.getElementById("modalPrice");
-    const modalDesc = document.getElementById("modalDesc");
-    const modalSpecs = document.getElementById("modalSpecs");
-    const modalBuy = document.getElementById("modalBuy");
-    const header = document.getElementById("header");
-    
-    const lightbox = document.getElementById("lightbox");
-    const lightboxImg = document.getElementById("lightboxImg");
-    const modalImageContainer = document.getElementById("modalImageContainer");
-    
-    // Variables para las flechitas
-    const btnPrev = document.getElementById("btnPrev");
-    const btnNext = document.getElementById("btnNext");
-    let imagenesActuales = [];
-    let indiceImagenActual = 0;
+// 1. CARGAR DATOS DESDE SUPABASE EN TIEMPO REAL
+async function cargarProductos() {
+  const { data, error } = await supabaseClient.from('relojes').select('*');
+  if (error) { console.error("Error:", error); return; }
+  productos = data;
+  renderProductos(productos);
+}
 
-    function getWhatsAppLink(producto) {
-      let texto = "Hola, me interesa adquirir el siguiente modelo:\n\n";
-      texto += "• *Modelo:* " + producto.nombre + "\n";
-      texto += "• *Precio:* $" + producto.precio + " " + MONEDA + "\n";
-      texto += "• *Detalles:* " + producto.specs.join(" | ") + "\n\n";
-      texto += "¿Me podrían confirmar la disponibilidad y los métodos de pago?";
-      return "https://wa.me/" + WHATSAPP_NUMERO + "?text=" + encodeURIComponent(texto);
-    }
+function getWhatsAppLink(producto) {
+  let texto = "Hola, me interesa adquirir el siguiente modelo:\n\n";
+  texto += "• *Modelo:* " + producto.nombre + "\n";
+  texto += "• *Precio:* $" + producto.precio + " " + MONEDA + "\n";
+  texto += "• *Detalles:* " + producto.specs.join(" | ") + "\n\n";
+  texto += "¿Me podrían confirmar la disponibilidad y los métodos de pago?";
+  return "https://wa.me/" + WHATSAPP_NUMERO + "?text=" + encodeURIComponent(texto);
+}
 
-    function renderProductos(lista) {
-      grid.innerHTML = "";
-      if(lista.length === 0) {
-        grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--ink-soft); padding: 2rem;'>No se encontraron relojes con esa búsqueda.</p>";
-        return;
-      }
-      lista.forEach(function (producto, i) {
-        const card = document.createElement("article");
-        card.className = "card";
-        card.style.animationDelay = (i * 50) + "ms";
-        
-        const linkWa = getWhatsAppLink(producto);
-        const prodString = encodeURIComponent(JSON.stringify(producto));
-        // Usamos la primera imagen del array para la tarjeta
-        const portada = producto.imagenes[0];
+function renderProductos(lista) {
+  grid.innerHTML = "";
+  if(lista.length === 0) { grid.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:var(--ink-soft);padding:2rem;'>No hay relojes.</p>"; return; }
+  lista.forEach(function (producto, i) {
+    const card = document.createElement("article");
+    card.className = "card" + (producto.agotado ? " sold-out" : "");
+    const linkWa = getWhatsAppLink(producto);
+    const prodString = encodeURIComponent(JSON.stringify(producto));
+    const portada = (producto.imagenes && producto.imagenes.length > 0) ? producto.imagenes[0] : "https://via.placeholder.com/300";
 
-        card.innerHTML = `
-          <div class="card__media" onclick="abrirModal(JSON.parse(decodeURIComponent('${prodString}')))">
-            <img src="${portada}" alt="${producto.nombre}" loading="lazy" />
-            <span class="card__cat">${producto.categoria}</span>
-          </div>
-          <div class="card__body">
-            <h3 class="card__name" onclick="abrirModal(JSON.parse(decodeURIComponent('${prodString}')))">${producto.nombre}</h3>
-            <p class="card__specs">${producto.specs.slice(0, 2).join(" · ")}</p>
-            <div class="card__footer">
-              <span class="card__price">$${producto.precio} <small>${MONEDA}</small></span>
-              <a href="${linkWa}" target="_blank" class="btn btn--whatsapp btn--small">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                Comprar
-              </a>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
+    card.innerHTML = `
+      <div class="card__media" onclick="abrirModal(JSON.parse(decodeURIComponent('${prodString}')))">
+        <img src="${portada}" alt="${producto.nombre}" loading="lazy" />
+        <div class="badge-sold-out">AGOTADO</div>
+        <span class="card__cat">${producto.categoria}</span>
+      </div>
+      <div class="card__body">
+        <h3 class="card__name" onclick="abrirModal(JSON.parse(decodeURIComponent('${prodString}')))">${producto.nombre}</h3>
+        <p class="card__specs">${producto.specs.slice(0, 2).join(" · ")}</p>
+        <div class="card__footer">
+          <span class="card__price">$${producto.precio} <small>${MONEDA}</small></span>
+          <a href="${linkWa}" target="_blank" class="btn btn--whatsapp btn--small" style="${producto.agotado ? 'pointer-events: none;' : ''}">Comprar</a>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
 
-    function aplicarFiltros() {
-      const textoBusqueda = searchInput.value.toLowerCase();
-      const botonActivo = document.querySelector(".filter.active");
-      const categoriaActiva = botonActivo ? botonActivo.dataset.cat : "Todos";
+function aplicarFiltros() {
+  const textoBusqueda = searchInput.value.toLowerCase();
+  const botonActivo = document.querySelector(".filter.active");
+  const categoriaActiva = botonActivo ? botonActivo.dataset.cat : "Todos";
+  const filtrados = productos.filter(function(p) {
+    const coincideNombre = p.nombre.toLowerCase().includes(textoBusqueda);
+    const coincideCategoria = (categoriaActiva === "Todos" || p.categoria === categoriaActiva);
+    return coincideNombre && coincideCategoria;
+  });
+  renderProductos(filtrados);
+}
 
-      const filtrados = productos.filter(function(p) {
-        const coincideNombre = p.nombre.toLowerCase().includes(textoBusqueda);
-        const coincideCategoria = (categoriaActiva === "Todos" || p.categoria === categoriaActiva);
-        return coincideNombre && coincideCategoria;
-      });
-      renderProductos(filtrados);
-    }
-
-    function crearFiltros() {
-      const categorias = ["Todos", ...new Set(productos.map(function (p) { return p.categoria; }))];
-      filtersEl.innerHTML = "";
-      categorias.forEach(function (cat, i) {
-        const btn = document.createElement("button");
-        btn.className = "filter" + (i === 0 ? " active" : "");
-        btn.dataset.cat = cat;
-        btn.textContent = cat;
-        btn.addEventListener("click", function () {
-          document.querySelectorAll(".filter").forEach(function (b) { b.classList.remove("active"); });
-          btn.classList.add("active");
-          aplicarFiltros();
-        });
-        filtersEl.appendChild(btn);
-      });
-    }
-
-    searchInput.addEventListener("input", aplicarFiltros);
-
-    function abrirModal(producto) {
-      // Asignamos las imágenes del producto a la variable global
-      imagenesActuales = producto.imagenes;
-      indiceImagenActual = 0; // Empezamos siempre en la primera foto
-      
-      modalImg.src = imagenesActuales[0];
-      lightboxImg.src = imagenesActuales[0];
-      
-      // Si hay más de 1 imagen, mostramos las flechas. Si no, las ocultamos.
-      if (imagenesActuales.length > 1) {
-        btnPrev.classList.remove("hidden");
-        btnNext.classList.remove("hidden");
-      } else {
-        btnPrev.classList.add("hidden");
-        btnNext.classList.add("hidden");
-      }
-
-      modalCat.textContent = producto.categoria;
-      modalName.textContent = producto.nombre;
-      modalPrice.innerHTML = "$" + producto.precio + " <small>" + MONEDA + "</small>";
-      modalDesc.textContent = producto.desc;
-      modalSpecs.innerHTML = producto.specs.map(function (s) { return "<li>" + s + "</li>"; }).join("");
-      modalBuy.href = getWhatsAppLink(producto);
-      
-      modal.classList.add("active");
-      document.body.classList.add("modal-open");
-    }
-
-    function cerrarModal() {
-      modal.classList.remove("active");
-      document.body.classList.remove("modal-open");
-    }
-
-    // LÓGICA DE LAS FLECHITAS DEL CARRUSEL
-    btnPrev.addEventListener("click", function(e) {
-      e.stopPropagation(); // Evita que se abra el zoom al tocar la flecha
-      indiceImagenActual--;
-      if (indiceImagenActual < 0) indiceImagenActual = imagenesActuales.length - 1;
-      actualizarImagenModal();
+function crearFiltros() {
+  const categorias = ["Todos", ...new Set(productos.map(function (p) { return p.categoria; }))];
+  filtersEl.innerHTML = "";
+  categorias.forEach(function (cat, i) {
+    const btn = document.createElement("button");
+    btn.className = "filter" + (i === 0 ? " active" : "");
+    btn.dataset.cat = cat;
+    btn.textContent = cat;
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".filter").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      aplicarFiltros();
     });
+    filtersEl.appendChild(btn);
+  });
+}
 
-    btnNext.addEventListener("click", function(e) {
-      e.stopPropagation();
-      indiceImagenActual++;
-      if (indiceImagenActual >= imagenesActuales.length) indiceImagenActual = 0;
-      actualizarImagenModal();
-    });
+searchInput.addEventListener("input", aplicarFiltros);
 
-    function actualizarImagenModal() {
-      modalImg.src = imagenesActuales[indiceImagenActual];
-      lightboxImg.src = imagenesActuales[indiceImagenActual];
-    }
+function abrirModal(producto) {
+  imagenesActuales = producto.imagenes || [];
+  indiceImagenActual = 0;
+  if (imagenesActuales.length > 0) { modalImg.src = imagenesActuales[0]; lightboxImg.src = imagenesActuales[0]; }
+  if (imagenesActuales.length > 1) { btnPrev.classList.remove("hidden"); btnNext.classList.remove("hidden"); } else { btnPrev.classList.add("hidden"); btnNext.classList.add("hidden"); }
+  modalCat.textContent = producto.categoria;
+  modalName.textContent = producto.nombre;
+  modalPrice.innerHTML = "$" + producto.precio + " <small>" + MONEDA + "</small>";
+  modalDesc.textContent = producto.descripcion;
+  modalSpecs.innerHTML = producto.specs.map(function (s) { return "<li>" + s + "</li>"; }).join("");
+  modalBuy.href = getWhatsAppLink(producto);
+  modal.classList.add("active");
+  document.body.classList.add("modal-open");
+}
 
-    // LÓGICA DEL ZOOM
-    modalImageContainer.addEventListener("click", function(e) {
-      // Si le dio clic a las flechas, no hacemos zoom
-      if(e.target.id === "btnPrev" || e.target.id === "btnNext") return;
-      lightbox.classList.add("active");
-    });
+function cerrarModal() { modal.classList.remove("active"); document.body.classList.remove("modal-open"); }
+btnPrev.addEventListener("click", function(e) { e.stopPropagation(); indiceImagenActual--; if (indiceImagenActual < 0) indiceImagenActual = imagenesActuales.length - 1; actualizarImagenModal(); });
+btnNext.addEventListener("click", function(e) { e.stopPropagation(); indiceImagenActual++; if (indiceImagenActual >= imagenesActuales.length) indiceImagenActual = 0; actualizarImagenModal(); });
+function actualizarImagenModal() { modalImg.src = imagenesActuales[indiceImagenActual]; lightboxImg.src = imagenesActuales[indiceImagenActual]; }
+modalImageContainer.addEventListener("click", function(e) { if(e.target.id === "btnPrev" || e.target.id === "btnNext") return; lightbox.classList.add("active"); });
+lightbox.addEventListener("click", function() { lightbox.classList.remove("active"); });
+modal.querySelectorAll("[data-close]").forEach(function (el) { el.addEventListener("click", cerrarModal); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") { cerrarModal(); lightbox.classList.remove("active"); } });
+window.addEventListener("scroll", function () { if (window.scrollY > 50) { header.classList.add("hidden"); } else { header.classList.remove("hidden"); } });
+let slideActual = 0;
+const slides = document.querySelectorAll(".hero__slide");
+if(slides.length > 0) { setInterval(function() { slides[slideActual].classList.remove("active"); slideActual = (slideActual + 1) % slides.length; slides[slideActual].classList.add("active"); }, 4000); }
 
-    lightbox.addEventListener("click", function() {
-      lightbox.classList.remove("active");
-    });
-
-    modal.querySelectorAll("[data-close]").forEach(function (el) { el.addEventListener("click", cerrarModal); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape") { cerrarModal(); lightbox.classList.remove("active"); } });
-
-    // HEADER SCROLL
-    window.addEventListener("scroll", function () {
-      if (window.scrollY > 50) {
-        header.classList.add("hidden"); 
-      } else {
-        header.classList.remove("hidden"); 
-      }
-    });
-
-    let slideActual = 0;
-    const slides = document.querySelectorAll(".hero__slide");
-    if(slides.length > 0) {
-      setInterval(function() {
-        slides[slideActual].classList.remove("active");
-        slideActual = (slideActual + 1) % slides.length;
-        slides[slideActual].classList.add("active");
-      }, 4000);
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      renderProductos(productos);
-      crearFiltros();
-    });
-  </script>
+document.addEventListener("DOMContentLoaded", function () { cargarProductos().then(() => { crearFiltros(); }); });
+</script>
 </body>
 </html>
-  
   
